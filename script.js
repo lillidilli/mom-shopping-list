@@ -1,12 +1,25 @@
-let shoppingList = [
-  { bought: false, name: "Tequila", quantity: 1 },
-  { bought: false, name: "Triple Sec", quantity: 1 },
-  { bought: true, name: "Glasses", quantity: 2 },
-  { bought: false, name: "Salt", quantity: 1 },
-  { bought: false, name: "Lemon", quantity: 5 },
-  { bought: false, name: "Ice", quantity: 1 },
-  { bought: true, name: "Shaker", quantity: 1 }
-];
+
+// update json db
+function updatedb() {
+  $.ajax({
+    url: "https://api.myjson.com/bins/cjisa",
+    type: "PUT",
+    data: JSON.stringify(shoppingList),
+    contentType: "application/json; charset=utf-8",
+    dataType: "json",
+    success: function(data, textStatus, jqXHR) {
+      console.log("db updated!");
+    }
+  });
+}
+// get JSON db from online db
+$.get("https://api.myjson.com/bins/cjisa", function(data, textStatus, jqXHR) {
+  if (textStatus === "success") {
+    shoppingList = data;
+    render();
+    console.log("just get data")
+  }
+});
 const regexNum = /^[1-9]+[0-9]?$/;
 const btnSubmit = document.getElementById("btnSubmit");
 btnSubmit.addEventListener("click", createItem);
@@ -28,6 +41,7 @@ const checkboxChange = function() {
     item.bought = false;
     renderItem(item, "shopping-items-list");
   }
+  updatedb();
   console.log(shoppingList);
 };
 
@@ -71,13 +85,13 @@ const renderItem = (item, parentNode) => {
 
   document.getElementById(parentNode).appendChild(itemNode);
 };
-
+function render(){
 shoppingList.forEach(item => {
   item.bought
     ? renderItem(item, "bought-items")
     : renderItem(item, "shopping-items-list");
 });
-
+}
 // const createItem = () => {
 function createItem() {
   event.preventDefault();
@@ -128,6 +142,7 @@ function createItem() {
     if (quantityInput.classList.contains("warning-input"))
       quantityInput.classList.remove("warning-input");
     panel2a.click();
+    updatedb();
   }
   console.log(shoppingList);
 }
@@ -142,6 +157,7 @@ function deleteItem() {
   });
   itemNode.remove();
   shoppingList.splice(index, 1);
+  updatedb();
   console.log(shoppingList);
 }
 
@@ -174,12 +190,14 @@ function editItem() {
       itemNode.id = editName.value;
       shoppingList[index].name = editName.value;
       divName.innerHTML = editName.value;
+      updatedb();
     } else {
       editName.value = shoppingList[index].name;
     }
     if (regexNum.test(editQuantity.value)) {
       shoppingList[index].quantity = Number(editQuantity.value);
       divQuantity.innerHTML = Number(editQuantity.value);
+      updatedb();
     } else {
       editQuantity.value = shoppingList[index].quantity;
     }
